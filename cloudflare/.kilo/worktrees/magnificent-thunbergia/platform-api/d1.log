@@ -1,0 +1,64 @@
+⚠️  Warning: Unsupported macOS version detected (12.6.0). The Cloudflare Workers runtime may not work correctly on macOS versions below 13.5.0. Consider upgrading to macOS 13.5.0+ or using a DevContainer setup with a supported version of Linux (glibc 2.35+ required).
+
+ ⛅️ wrangler 3.114.17 (update available 4.106.0)
+------------------------------------------------
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+
+  Please update to the latest version to prevent critical errors.
+  Run `npm install --save-dev wrangler@4` to update to the latest version.
+  After installation, run Wrangler with `npx wrangler`.
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in top-level field: "flagship"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m⚠️ This process may take some time, during which your D1 database will be unavailable to serve queries.[0m
+
+
+🌀 Executing on remote database nexus-db (f15e09e0-564f-48f1-a64f-1a7fe81d3286):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+Note: if the execution fails to complete, your DB will return to its original state and you can safely retry.
+├ Checking if file needs uploading
+│
+├ 🌀 Uploading f15e09e0-564f-48f1-a64f-1a7fe81d3286.206c26e777fc7993.sql
+│ 🌀 Uploading complete.
+│
+🌀 Starting import...
+🌀 Processed 25 queries.
+🚣 Executed 25 queries in 6.17ms (39 rows read, 50 rows written)
+   Database is currently at bookmark 00000001-00000008-0000509b-e434daefff94e5f03c2e789f16200582.
+[
+  {
+    "results": [
+      {
+        "Total queries executed": 25,
+        "Rows read": 39,
+        "Rows written": 50,
+        "Database size (MB)": "0.18"
+      }
+    ],
+    "success": true,
+    "finalBookmark": "00000001-00000008-0000509b-e434daefff94e5f03c2e789f16200582",
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "WEUR",
+      "served_by_colo": "AMS",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 6.1704
+      },
+      "duration": 6.1704,
+      "changes": 1,
+      "last_row_id": 0,
+      "changed_db": true,
+      "size_after": 180224,
+      "rows_read": 39,
+      "rows_written": 50,
+      "num_tables": 11,
+      "total_attempts": 1
+    }
+  }
+]

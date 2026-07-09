@@ -1,0 +1,60 @@
+
+> platform-api@0.0.1 deploy
+> wrangler deploy
+
+⚠️  Warning: Unsupported macOS version detected (12.6.0). The Cloudflare Workers runtime may not work correctly on macOS versions below 13.5.0. Consider upgrading to macOS 13.5.0+ or using a DevContainer setup with a supported version of Linux (glibc 2.35+ required).
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mFailed to write to log file Error: EPERM: operation not permitted, open '/Users/elbaan/Library/Preferences/.wrangler/logs/wrangler-2026-07-01_10-31-45_993.log'[0m
+
+      at async open (node:internal/fs/promises:639:25)
+      at async writeFile (node:internal/fs/promises:1216:14)
+      at async /Users/elbaan/Documents/cloudflare/platform-api/node_modules/wrangler/wrangler-dist/cli.js:83518:7
+      at async Mutex.runWith (/Users/elbaan/Documents/cloudflare/platform-api/node_modules/miniflare/dist/src/index.js:2504:16)
+      at async appendToDebugLogFile (/Users/elbaan/Documents/cloudflare/platform-api/node_modules/wrangler/wrangler-dist/cli.js:83515:3) {
+    errno: -1,
+    code: 'EPERM',
+    syscall: 'open',
+    path: '/Users/elbaan/Library/Preferences/.wrangler/logs/wrangler-2026-07-01_10-31-45_993.log'
+  }
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mWould have written: [0m
+
+  --- 2026-07-01T10:31:46.118Z debug
+  🪵  Writing logs to "/Users/elbaan/Library/Preferences/.wrangler/logs/wrangler-2026-07-01_10-31-45_993.log"
+  ---
+  
+
+
+
+ ⛅️ wrangler 3.114.17 (update available 4.106.0)
+------------------------------------------------
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+
+  Please update to the latest version to prevent critical errors.
+  Run `npm install --save-dev wrangler@4` to update to the latest version.
+  After installation, run Wrangler with `npx wrangler`.
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in top-level field: "flagship"
+
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 1 error:[0m
+
+  [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "async_hooks"[0m
+  
+      node_modules/@openfeature/server-sdk/dist/esm/index.js:872:34:
+  [37m      872 │ import { AsyncLocalStorage } from [32m"async_hooks"[37m;
+            ╵                                   [32m~~~~~~~~~~~~~[0m
+  
+    The package "async_hooks" wasn't found on the file system but is built into node.
+    - Make sure to prefix the module name with "node:" or update your compatibility_date to 2024-09-23 or later.
+    
+  
+  
+
+
+🪵  Logs were written to "/Users/elbaan/Library/Preferences/.wrangler/logs/wrangler-2026-07-01_10-31-45_993.log"

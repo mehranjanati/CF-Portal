@@ -1,0 +1,12 @@
+name = "platform-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nexus-db"
+database_id = "f15e09e0-564f-48f1-a64f-1a7fe81d3286"
+
+[ai]
+binding = "AI"

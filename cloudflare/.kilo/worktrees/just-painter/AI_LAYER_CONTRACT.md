@@ -1,0 +1,62 @@
+# AI Layer & Agents Contract
+
+**وضعیت:** Baseline
+**هدف:** استانداردسازی نحوه استفاده از AI و Agentها در پلتفرم با تمرکز بر استفاده بومی از اکوسیستم Cloudflare (AI Gateway و Agents SDK).
+
+---
+
+## 1. قانون اصلی: AI Gateway به عنوان تنها نقطه ورود (Single Entrypoint)
+
+در این معماری، ما به هیچ‌وجه به صورت مستقیم از طریق SDKهای پراکنده به OpenAI، Anthropic یا Gemini متصل نمی‌شویم. تمام درخواست‌های AI باید و باید از **Cloudflare AI Gateway** عبور کنند.
+
+### دلایل استفاده از AI Gateway:
+1. **کنترل هزینه و Rate Limiting:** مانیتورینگ دقیق توکن‌های مصرفی برای هر Tenant.
+2. **Caching:** جلوگیری از تولید مجدد کدهای تکراری (ذخیره Responseهای مشابه).
+3. **Fallback & Load Balancing:** اگر OpenAI قطع بود، ترافیک به صورت خودکار به Anthropic یا مدل‌های لوکال (Workers AI) هدایت شود.
+
+### ساختار URL در AI Gateway
+درخواست‌های Worker/Agent ما به این شکل ارسال می‌شوند:
+```text
+https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_name}/{provider_name}/chat/completions
+```
+
+---
+
+## 2. پیاده‌سازی Agentها با Cloudflare Agents SDK
+
+ما از مفاهیم سنتی مثل Temporal یا Background Jobs طولانی فاصله می‌گیریم و برای فرآیندهای Stateful و Long-running منحصراً از **Cloudflare Agents SDK** استفاده می‌کنیم. (که در پس‌زمینه از Durable Objects بهره می‌برد).
+
+### لیست Agentهای روز اول (Day-1 Agents):
+
+#### 1. Builder Agent (مغز اصلی تولید کد)
+- **وظیفه:** دریافت Prompt کاربر (از طریق Portal SPA)، درک Context پروژه، و تولید تغییرات کد (Patch/Diff).
+- **نحوه کار:**
+  - وضعیت نشست (Chat History) را در Durable Objects نگه می‌دارد.
+  - پس از تایید کاربر، تغییرات را روی یک برنچ جدید (`preview/feature-xyz`) در GitHub کامیت می‌کند.
+  - منتظر می‌ماند تا Webhook موفقیت‌آمیز بودن دیپلوی (از GitHub Actions) را دریافت کند.
+  - لینک Preview را به کاربر در چت نمایش می‌دهد.
+
+#### 2. Deploy Explainer Agent (دستیار دیباگ)
+- **وظیفه:** خواندن لاگ‌های خطای GitHub Actions و ارائه راهنمایی به کاربر.
+- **نحوه کار:** اگر دیپلوی Fail شود، این Agent به طور خودکار لاگ‌ها را می‌خواند (از طریق R2 یا GitHub API)، خطا را درک کرده و راه‌حل (یا حتی Patch اصلاحی) پیشنهاد می‌دهد.
+
+---
+
+## 3. معماری جریان داده (Data Flow) برای AI
+
+1. **ارسال درخواست:** کاربر در Portal SPA یک پیام تایپ می‌کند ("یک صفحه لاگین بساز").
+2. **دریافت در Worker:** پلتفرم API (Worker) پیام را دریافت کرده و به `Builder Agent` پاس می‌دهد.
+3. **پردازش در Agent:** 
+   - ایجنت Context فعلی پروژه (ساختار فایل‌ها) را از Vectorize/R2 می‌خواند.
+   - از طریق **AI Gateway** درخواست را به LLM (مثلاً GPT-4o) می‌فرستد.
+4. **تولید خروجی (Structured Output):** LLM باید خروجی را به صورت JSON ساختاریافته (مثلاً آرایه‌ای از فایل‌های جدید یا Diffها) برگرداند.
+5. **اعمال تغییرات (Tool Calling):** Agent با استفاده از ابزار داخلی خود (Tools)، تغییرات را از طریق GitHub API روی ریپازیتوری کاربر کامیت می‌کند.
+6. **بازخورد به کلاینت:** از طریق Server-Sent Events (SSE) یا Polling، پورتال SPA در لحظه تایپ شدن جواب ایجنت را نمایش می‌دهد.
+
+---
+
+## 4. RAG و حافظه (Memory)
+
+برای اینکه Agent پروژه کاربر را بشناسد (و توهم نزند):
+- **Vectorize:** هر بار که کدی در `main` مرج می‌شود، یک Workflow در پس‌زمینه اجرا شده، فایل‌ها را Chunk کرده و Embedding آن‌ها را در Cloudflare Vectorize ذخیره می‌کند.
+- **R2:** فایل‌های بزرگتر (مثل ساختار کلی دایرکتوری‌ها) در R2 کش می‌شوند تا Agent با سرعت بالا به آن‌ها دسترسی داشته باشد.

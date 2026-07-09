@@ -1,0 +1,14 @@
+name = "platform-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = [ "nodejs_compat" ]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nexus-db"
+# این آیدی باید توسط کاربر بعد از اجرای wrangler d1 create آپدیت شود
+database_id = "6fa75115-57a0-42a3-981d-507b5354420a"
+
+[[flagship]]
+binding = "FLAGS" # This will be env.FLAGS in the Worker
+app_id = "YOUR_FLAGSHIP_APP_ID" # Replace with your actual Flagship App ID
