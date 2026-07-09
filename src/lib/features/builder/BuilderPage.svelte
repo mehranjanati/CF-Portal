@@ -1,14 +1,16 @@
 <script lang="ts">
   import { builderStore } from '$lib/stores/builder.svelte';
   import { workspace } from '$lib/stores/workspace.svelte';
-  import BuilderPromptPanel from './BuilderPromptPanel.svelte';
-  import BuilderResultPanel from './BuilderResultPanel.svelte';
-  import { onMount } from 'svelte';
+import BuilderPromptPanel from './BuilderPromptPanel.svelte';
+import BuilderResultPanel from './BuilderResultPanel.svelte';
+import { initializeBuilderTools } from './tools';
+import { onMount from 'svelte';
   import { page } from '$app/stores';
   
   let { tenantId, appId, sessionId } = $props<{ tenantId: string; appId: string; sessionId: string }>();
   
   onMount(() => {
+    initializeBuilderTools();
     if (sessionId) {
       builderStore.loadSession(sessionId);
     }

@@ -7,13 +7,13 @@ The goal is to create a reactive, high-performance frontend that can process str
 
 ## Tasks
 
-### [ ] TASK 09-01: AG-UI Parser Implementation
+### [x] TASK 09-01: AG-UI Parser Implementation
 Implement the parser for structured AG-UI text packets.
 
-### [ ] TASK 09-02: Svelte Runes Integration
+### [x] TASK 09-02: Svelte Runes Integration
 Connect the parser to the application state using Svelte 5 Runes.
 
-### [ ] TASK 09-03: Tool Call Handler
+### [x] TASK 09-03: Tool Call Handler
 Implement the logic to execute local functions in response to agent tool calls.
 
 ## Implementation Details

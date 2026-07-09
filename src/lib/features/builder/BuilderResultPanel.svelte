@@ -1,48 +1,61 @@
 <script lang="ts">
-  import { builderStore } from '$lib/stores/builder.svelte';
-  import { onMount } from 'svelte';
-  import BuilderFileExplorer from './BuilderFileExplorer.svelte';
-  import BuilderCodeViewer from './BuilderCodeViewer.svelte';
+import { builderStore } from '$lib/stores/builder.svelte';
+import { onMount } from 'svelte';
+import BuilderFileExplorer from './BuilderFileExplorer.svelte';
+import BuilderCodeViewer from './BuilderCodeViewer.svelte';
 
-  let { sessionId } = $props<{ sessionId: string }>();
-  
-  let session: any = $state(null);
-  let result: any = $state(null);
-  let prompts: any[] = $state([]);
-  let isLoading = $state(true);
-  let selectedFile: any = $state(null);
-  
-  async function loadData(id: string) {
-    isLoading = true;
-    try {
-      const data = await builderStore.getSession(id);
-      session = data.session;
-      result = data.result;
-      prompts = data.prompts;
-      
-      if (result?.files?.length > 0) {
-        selectedFile = result.files[0];
-      }
-    } catch (err: any) {
-      console.error('Failed to load session data:', err);
-      session = null;
-    } finally {
-      isLoading = false;
+let { sessionId } = $props<{ sessionId: string }>();
+
+let session: any = $state(null);
+let result: any = $state(null);
+let prompts: any[] = $state([]);
+let isLoading = $state(true);
+let selectedFile: any = $state(null);
+
+async function loadData(id: string) {
+  isLoading = true;
+  try {
+    const data = await builderStore.getSession(id);
+    session = data.session;
+    result = data.result;
+    prompts = data.prompts;
+    
+    if (result?.files?.length > 0) {
+      selectedFile = result.files[0];
+    }
+  } catch (err: any) {
+    console.error('Failed to load session data:', err);
+    session = null;
+  } finally {
+    isLoading = false;
+  }
+}
+
+$effect(() => {
+  const effectiveId = sessionId || builderStore.session?.id;
+  if (effectiveId) {
+    loadData(effectiveId);
+  } else {
+    isLoading = false;
+  }
+});
+
+$effect(() => {
+  // React to selectedFilePath change in applicationState
+  const path = builderStore.applicationState.selectedFilePath;
+  if (path && result?.files) {
+    const file = result.files.find((f: any) => f.path === path);
+    if (file) {
+      selectedFile = file;
     }
   }
+});
 
-  $effect(() => {
-    const effectiveId = sessionId || builderStore.session?.id;
-    if (effectiveId) {
-      loadData(effectiveId);
-    } else {
-      isLoading = false;
-    }
-  });
+function handleFileSelect(event: CustomEvent<{ path: string; action: string; content?: string }>) {
+  selectedFile = event.detail;
+  builderStore.applicationState.selectedFilePath = event.detail.path;
+}
 
-  function handleFileSelect(event: CustomEvent<{ path: string; action: string; content?: string }>) {
-    selectedFile = event.detail;
-  }
 </script>
 
 {#if isLoading}
@@ -80,8 +93,9 @@
             {selectedFile.path} ({selectedFile.action})
           </div>
           <div class="flex-1 overflow-auto">
-            <BuilderCodeViewer code={selectedFile.content || ''} />
+            <BuilderCodeViewer code={builderStore.applicationState.editorContent || selectedFile?.content || ''} />
           </div>
+
         {:else}
           <div class="flex-1 flex items-center justify-center text-text-muted italic text-sm">
             Select a file to view code
