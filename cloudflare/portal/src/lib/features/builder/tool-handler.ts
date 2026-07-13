@@ -57,7 +57,18 @@ export function registerTool(name: string, fn: ToolFunction) {
 }
 
 /**
+ * Clears the tool registry. 
+ * Use this for testing purposes.
+ */
+export function clearRegistry() {
+  for (const key in toolRegistry) {
+    delete toolRegistry[key];
+  }
+}
+
+/**
  * Returns the current registry of tools (for debugging).
+ * 
  */
 export function getRegisteredTools() {
   return Object.keys(toolRegistry);

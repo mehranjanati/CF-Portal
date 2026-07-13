@@ -152,19 +152,21 @@
                                 href={`/builder?tenantId=${project.tenant_id}&appId=${project.id}&sessionId=${session.id}`}
                                 class="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors group"
                             >
-                                <div class="flex items-center space-x-4 min-w-0">
-                                    <div class={`h-2 w-2 rounded-full ${session.status === 'completed' ? 'bg-green-400' : session.status === 'failed' ? 'bg-red-400' : 'bg-blue-400 animate-pulse'}`}></div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-semibold text-text-primary truncate">{session.intent}</p>
-                                        <p class="text-[10px] text-text-muted font-mono">{session.template} · {new Date(session.created_at).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                                <ChevronRight class="h-4 w-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-1 transition-all" />
-                            </a>
-                        {/each}
-                    {/if}
-                </div>
-            </Card>
+                                 <div class="flex items-center space-x-4 min-w-0">
+                                     <div class={`h-2 w-2 rounded-full ${session.status === 'completed' ? 'bg-green-400' : session.status === 'failed' ? 'bg-red-400' : 'bg-blue-400 animate-pulse'}`}></div>
+                                     <div class="min-w-0">
+                                         <p class="text-sm font-semibold text-text-primary truncate">{session.intent}</p>
+                                         <p class="text-[10px] text-text-muted font-mono">{session.template} · {new Date(session.createdAt).toLocaleDateString()}</p>
+                                     </div>
+                                 </div>
+                                 <ChevronRight class="h-4 w-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-1 transition-all" />
+                             </a>
+                         {/each}
+                     {/if}
+                 </div>
+             </Card>
+
+
 
             <!-- Deployment Summary or Other Info -->
             <Card class="bg-bg-secondary border-white/5 p-6 flex flex-col items-center justify-center text-center space-y-4">

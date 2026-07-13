@@ -19,5 +19,5 @@
 </script>
 
 <BuilderPage {tenantId} {appId} {sessionId}>
-  {@render children()}
+  {@render children?.()}
 </BuilderPage>

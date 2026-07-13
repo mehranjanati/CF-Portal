@@ -130,10 +130,14 @@ export class BuilderStore {
   async apply() {
     if (!this.session) return;
     this.isLoading = true;
+    this.error = null;
     try {
-      await builder.apply(this.session.id);
-    } catch (err) {
+      const result = await builder.apply(this.session.id);
+      return result;
+    } catch (err: any) {
+      this.error = err.message || 'Failed to apply result';
       console.error('Failed to apply result:', err);
+      throw err;
     } finally {
       this.isLoading = false;
     }

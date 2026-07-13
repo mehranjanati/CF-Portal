@@ -20,7 +20,7 @@ export class AgentConnection {
    * If the session ID has changed, it will reconnect to the new session.
    * @param sessionId The ID of the active session.
    */
-  connect(sessionId: string) {
+  connect(sessionId?: string) {
     if (!sessionId) {
       console.warn('[AgentConnection] connect called without a sessionId. Skipping.');
       return;

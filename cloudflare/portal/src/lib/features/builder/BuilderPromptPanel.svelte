@@ -1,9 +1,11 @@
 <script lang="ts">
   import { builderStore } from '$lib/stores/builder.svelte';
   import { workspace } from '$lib/stores/workspace.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
-  import Select from '$lib/components/ui/Select.svelte';
+  import { Button } from '$lib/components/ui/button';
+import { Input } from '$lib/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '$lib/components/ui/select';
+import { Label } from '$lib/components/ui/label';
+import { Textarea } from '$lib/components/ui/textarea';
   import type { BuilderTemplate } from '$lib/types/builder';
   import { RefreshCw, Plus, Sparkles, Send } from 'lucide-svelte';
   import BuilderSessionList from './BuilderSessionList.svelte';
@@ -75,17 +77,33 @@
       
       <div class="space-y-4">
         {#if !tenantId || !appId}
-          <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-200">
-            Please select a project from the Projects page to start building.
+          <div class="space-y-4">
+            <div class="p-3 text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              Please select a project from the Projects page to start building.
+            </div>
+            <div class="space-y-2">
+              <Label>Tenant ID</Label>
+              <Input bind:value={tenantId} placeholder="t_..." disabled />
+            </div>
+            <div class="space-y-2">
+              <Label>App ID</Label>
+              <Input bind:value={appId} placeholder="app_..." disabled />
+            </div>
           </div>
-          <Input label="Tenant ID" bind:value={tenantId} placeholder="t_..." disabled />
-          <Input label="App ID" bind:value={appId} placeholder="app_..." disabled />
         {:else}
-          <Select 
-            label="Template" 
-            options={templates} 
-            bind:value={template} 
-          />
+          <div class="space-y-2">
+            <Label>Template</Label>
+            <Select bind:value={template}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                {#each templates as t}
+                  <SelectItem value={t.value}>{t.label}</SelectItem>
+                {/each}
+              </SelectContent>
+            </Select>
+          </div>
           
           <div class="space-y-1">
             <label class="block text-xs font-bold text-text-muted uppercase">Initial Intent</label>
@@ -97,12 +115,14 @@
             ></textarea>
           </div>
 
-          <Button 
-            variant="primary" 
-            class="w-full py-6 font-bold text-md bg-accent-primary text-bg-primary hover:bg-accent-primary/90" 
-            onclick={handleStartSession}
-            disabled={!tenantId || !appId || !intent || builderStore.isLoading}
-          >
+           <Button 
+             variant="default" 
+             class="w-full py-6 font-bold text-md bg-accent-primary text-bg-primary hover:bg-accent-primary/90" 
+             onclick={handleStartSession}
+             disabled={!tenantId || !appId || !intent || builderStore.isLoading}
+           >
+
+
             {#if builderStore.isLoading}
               <RefreshCw class="w-4 h-4 mr-2 animate-spin" />
               Starting...
@@ -149,12 +169,14 @@
             ></textarea>
           </div>
           
-          <Button 
-            variant="primary" 
-            class="w-full py-6 font-bold text-md bg-accent-primary text-bg-primary hover:bg-accent-primary/90" 
-            onclick={handleGenerate}
-            disabled={!prompt || builderStore.isLoading || builderStore.session.status === 'generating'}
-          >
+           <Button 
+             variant="default" 
+             class="w-full py-6 font-bold text-md bg-accent-primary text-bg-primary hover:bg-accent-primary/90" 
+             onclick={handleGenerate}
+             disabled={!prompt || builderStore.isLoading || builderStore.session.status === 'generating'}
+           >
+
+
             {#if builderStore.isLoading || builderStore.session.status === 'generating'}
               <RefreshCw class="w-4 h-4 mr-2 animate-spin" />
               Generating...

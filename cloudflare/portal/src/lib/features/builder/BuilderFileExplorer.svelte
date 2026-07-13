@@ -1,13 +1,35 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { ChevronRight, ChevronDown, File, Folder } from 'lucide-svelte';
 
-  let { files } = $props<{ files: Array<{ path: string; action: string; content?: string }> }>();
-  const dispatch = createEventDispatcher();
+  type FileItem = { path: string; action: string; content?: string };
+
+  type FileNode = {
+    name: string;
+    path: string;
+    isDir: boolean;
+    children?: Record<string, FileNode>;
+    fileData?: FileItem;
+  };
+
+  let { files, onselectfile } = $props<{ 
+    files: FileItem[];
+    onselectfile: (file: FileItem) => void;
+  }>();
+
+  // Track expanded directories by their path
+  let expandedPaths = $state<Set<string>>(new Set());
+
+  function toggleExpand(path: string) {
+    if (expandedPaths.has(path)) {
+      expandedPaths.delete(path);
+    } else {
+      expandedPaths.add(path);
+    }
+  }
 
   // Function to build a tree structure from a flat list of paths
-  function buildTree(fileList: typeof files) {
-    const root: any = { name: 'root', children: {}, isDir: true };
+  function buildTree(fileList: FileItem[]): FileNode {
+    const root: FileNode = { name: 'root', children: {}, isDir: true, path: '' };
 
     fileList.forEach(file => {
       const parts = file.path.split('/').filter(p => p.length > 0);
@@ -16,16 +38,18 @@
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         const isFile = i === parts.length - 1;
+        const currentPath = parts.slice(0, i + 1).join('/');
 
-        if (!current.children[part]) {
-          current.children[part] = {
+        if (!current.children?.[part]) {
+          current.children![part] = {
             name: part,
+            path: currentPath,
             isDir: !isFile,
             children: {},
             fileData: isFile ? file : undefined
           };
         }
-        current = current.children[part];
+        current = current.children![part];
       }
     });
 
@@ -34,7 +58,6 @@
 
   const tree = $derived(buildTree(files));
 </script>
-
 <div class="file-explorer">
   {#if files.length === 0}
     <div class="empty">No files generated yet.</div>
@@ -43,20 +66,32 @@
   {/if}
 </div>
 
-{#snippet TreeNode(node: any)}
+{#snippet TreeNode(node: FileNode)}
   <div class="node">
     <div 
       class="node-content" 
+      role="button"
+      tabindex="0"
       onclick={() => {
         if (node.isDir) {
-          node.expanded = !node.expanded;
+          toggleExpand(node.path);
         } else if (node.fileData) {
-          dispatch('selectFile', node.fileData);
+          onselectfile(node.fileData);
+        }
+      }}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (node.isDir) {
+            toggleExpand(node.path);
+          } else if (node.fileData) {
+            onselectfile(node.fileData);
+          }
         }
       }}
     >
       {#if node.isDir}
-        {#if node.expanded}
+        {#if expandedPaths.has(node.path)}
           <ChevronDown class="w-4 h-4 mr-1" />
         {:else}
           <ChevronRight class="w-4 h-4 mr-1" />
@@ -69,9 +104,13 @@
       <span class="node-name">{node.name}</span>
     </div>
 
-    {#if node.isDir && node.expanded}
+    {#if node.isDir && expandedPaths.has(node.path)}
       <div class="node-children">
-        {#each Object.values(node.children) as child}
+        {#each Object.values(node.children ?? {}).sort((a, b) => {
+          if (a.isDir && !b.isDir) return -1;
+          if (!a.isDir && b.isDir) return 1;
+          return a.name.localeCompare(b.name);
+        }) as child}
           {@render TreeNode(child)}
         {/each}
       </div>
@@ -82,13 +121,16 @@
 <style>
   .file-explorer {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    color: #c9d1d9;
   }
 
   .empty {
-    color: var(--text-muted);
+    color: #8b949e;
     font-style: italic;
-    padding: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.8125rem;
   }
 
   .node {
@@ -98,10 +140,11 @@
   .node-content {
     display: flex;
     align-items: center;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    border-radius: 0.25rem;
+    margin: 0 0.25rem;
+    transition: background-color 0.1s ease;
   }
 
   .node-content:hover {
@@ -109,12 +152,19 @@
   }
 
   .node-name {
-    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #c9d1d9;
   }
 
   .node-children {
-    padding-left: 1.25rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    margin-left: 1.125rem;
+  }
+
+  :global(.node-content svg) {
+    flex-shrink: 0;
   }
 </style>
-
-

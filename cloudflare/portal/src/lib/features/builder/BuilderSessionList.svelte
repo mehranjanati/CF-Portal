@@ -27,27 +27,31 @@
   <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
     {#each builderStore.history as session}
       {@const status = getStatusIcon(session.status)}
-      <button 
-        onclick={() => handleSelectSession(session.sessionId)}
-        class={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between group ${
-          builderStore.session?.id === session.sessionId 
-            ? 'bg-accent-primary/10 border-accent-primary/50 ring-1 ring-accent-primary/20' 
-            : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:shadow-sm'
-        }`}
-      >
+       <button 
+         onclick={() => handleSelectSession(session.id)}
+         class={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between group ${
+           builderStore.session?.id === session.id 
+             ? 'bg-accent-primary/10 border-accent-primary/50 ring-1 ring-accent-primary/20' 
+             : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:shadow-sm'
+         }`}
+       >
+
+
         <div class="flex items-center space-x-3 min-w-0">
           <status.icon class={`w-4 h-4 shrink-0 ${status.color}`} />
-          <div class="min-w-0">
-            <p class={`text-xs font-bold truncate ${builderStore.session?.id === session.sessionId ? 'text-accent-primary' : 'text-text-primary'}`}>
-              {session.intent}
-            </p>
-            <p class="text-[10px] text-text-muted font-medium">
-              {new Date(session.createdAt).toLocaleDateString()} · {session.template}
-            </p>
-          </div>
-        </div>
-        <ChevronRight class={`w-3 h-3 transition-transform ${builderStore.session?.id === session.sessionId ? 'text-accent-primary translate-x-0.5' : 'text-text-muted group-hover:text-text-primary group-hover:translate-x-0.5'}`} />
-      </button>
+           <div class="min-w-0">
+             <p class={`text-xs font-bold truncate ${builderStore.session?.id === session.id ? 'text-accent-primary' : 'text-text-primary'}`}>
+               {session.intent}
+             </p>
+             <p class="text-[10px] text-text-muted font-medium">
+               {new Date(session.createdAt).toLocaleDateString()} · {session.template}
+             </p>
+           </div>
+         </div>
+         <ChevronRight class={`w-3 h-3 transition-transform ${builderStore.session?.id === session.id ? 'text-accent-primary translate-x-0.5' : 'text-text-muted group-hover:text-text-primary group-hover:translate-x-0.5'}`} />
+       </button>
+
+
     {:else}
       <div class="py-10 text-center border-2 border-dashed border-white/5 rounded-2xl">
         <Clock class="w-8 h-8 text-white/10 mx-auto mb-2" />
