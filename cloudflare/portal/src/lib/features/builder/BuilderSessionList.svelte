@@ -28,7 +28,7 @@
     {#each builderStore.history as session}
       {@const status = getStatusIcon(session.status)}
        <button 
-         onclick={() => handleSelectSession(session.id)}
+         onclick={() => handleSelectSession(session.sessionId)}
          class={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between group ${
            builderStore.session?.id === session.id 
              ? 'bg-accent-primary/10 border-accent-primary/50 ring-1 ring-accent-primary/20' 
