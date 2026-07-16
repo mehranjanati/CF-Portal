@@ -10,3 +10,11 @@ database_id = "f15e09e0-564f-48f1-a64f-1a7fe81d3286"
 
 [ai]
 binding = "AI"
+
+[[durable_objects.bindings]]
+name = "STREAMER"
+class_name = "SessionStreamer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SessionStreamer"]

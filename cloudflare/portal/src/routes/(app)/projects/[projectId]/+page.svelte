@@ -3,8 +3,8 @@
     import { workspace } from '$lib/stores/workspace.svelte';
     import { builderStore } from '$lib/stores/builder.svelte';
     // import { isFeatureEnabled } from '$lib/featureFlags';
-    import Card from '$lib/components/ui/Card.svelte';
-    import Button from '$lib/components/ui/Button.svelte';
+    import { Card } from '$lib/components/ui/card';
+    import { Button } from '$lib/components/ui/button';
     import { Lock, Rocket, Clock, Globe, ArrowLeft, Plus, Sparkles, ChevronRight } from 'lucide-svelte';
     import { onMount } from 'svelte';
 

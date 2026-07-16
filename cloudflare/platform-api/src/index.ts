@@ -78,12 +78,23 @@ app.use('*', async (c, next) => {
     (c.env as any).DB = {
       prepare: (sql: string) => {
         console.log(`[Local Dev] DB Prepare: ${sql}`);
-        const query = { ...mockPreparedQuery, sql };
+        const query: any = { ...mockPreparedQuery, sql };
         query.run = async () => {
           await query.executeMock();
-          return { success: true };
+          return { success: true, changes: 1 }; // Simulate a change for successful run
         };
         return query;
+      },
+      batch: async (statements: any[]) => {
+        console.log(`[Local Dev] DB Batch: ${statements.length} statements`);
+        const results = [];
+        for (const stmt of statements) {
+          if (stmt.executeMock) {
+            await stmt.executeMock();
+          }
+          results.push({ success: true, changes: 1 }); // Simulate a change for each successful run
+        }
+        return results;
       },
     };
     (c.env as any).FLAGS = {};
@@ -105,6 +116,41 @@ app.use('*', async (c, next) => {
         };
       }
     };
+
+    // Mock STREAMER Durable Object namespace for local dev
+    const mockStreamerNamespace: any = {
+      idFromName: (name: string) => {
+        console.log(`[Local Dev] Mock Streamer: idFromName(${name})`);
+        return { name };
+      },
+      get: (id: any) => {
+        console.log(`[Local Dev] Mock Streamer: get(${id?.name})`);
+        return {
+          fetch: async (request: Request) => {
+            if (request.method === 'POST') {
+              const body = await request.json();
+              console.log(`[Local Dev] Mock Streamer: published event:`, JSON.stringify(body).slice(0, 200));
+              return new Response('OK');
+            }
+            // SSE endpoint: return a simple stream
+            const stream = new ReadableStream({
+              start: (controller) => {
+                controller.enqueue('data: {"type":"message","role":"assistant","content":"Connected to mock SSE stream"}\n\n');
+                controller.close();
+              }
+            });
+            return new Response(stream, {
+              headers: {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+              },
+            });
+          }
+        };
+      }
+    };
+    (c.env as any).STREAMER = mockStreamerNamespace;
   }
   await next();
 });
@@ -183,3 +229,4 @@ app.notFound((c) => {
 });
 
 export default app;
+export { SessionStreamer } from './modules/builder/streamer';

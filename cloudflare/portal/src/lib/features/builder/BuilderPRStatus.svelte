@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { builder } from '$lib/api';
+  import { Badge } from '$lib/components/ui/badge';
 
   let { prNumber }: { prNumber: number } = $props();
   let status = $state<'pending' | 'merging' | 'success' | 'failed'>('pending');
@@ -24,11 +24,18 @@
 
     return () => clearInterval(interval);
   });
+
+  const mappedVariant = (s: typeof status) => {
+    if (s === 'success') return 'secondary';
+    if (s === 'failed') return 'destructive';
+    if (s === 'merging') return 'outline';
+    return 'default';
+  };
 </script>
 
 <div class="pr-status">
   <span class="status-label">PR Status:</span>
-  <span class="status-value {status}">{status}</span>
+  <Badge variant={mappedVariant(status)}>{status}</Badge>
 </div>
 
 <style>
@@ -41,26 +48,5 @@
 
   .status-label {
     color: var(--text-muted);
-  }
-
-  .status-value {
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-
-  .status-value.pending {
-    color: var(--accent-primary);
-  }
-
-  .status-value.merging {
-    color: #eab308; /* yellow */
-  }
-
-  .status-value.success {
-    color: #22c55e; /* green */
-  }
-
-  .status-value.failed {
-    color: #ef4444; /* red */
   }
 </style>

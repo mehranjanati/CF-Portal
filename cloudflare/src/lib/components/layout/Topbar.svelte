@@ -9,8 +9,8 @@
         Sun,
         Moon,
     } from "lucide-svelte";
-    import Button from "$lib/components/ui/Button.svelte";
-    import Input from "$lib/components/ui/Input.svelte";
+    import { Button } from "$lib/components/ui/button";
+    import { Input } from "$lib/components/ui/input";
     import { onMount } from "svelte";
 
     let { collapsed = $bindable() } = $props();

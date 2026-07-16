@@ -1,8 +1,8 @@
 <script lang="ts">
     import { workspace } from '$lib/stores/workspace.svelte';
-    import Card from '$lib/components/ui/Card.svelte';
+    import { Card } from '$lib/components/ui/card';
     import { Globe, Rocket, ShieldCheck, Cpu, ArrowUpRight, Clock, Plus, Lock } from 'lucide-svelte';
-    import Button from '$lib/components/ui/Button.svelte';
+    import { Button } from '$lib/components/ui/button';
     // import { isFeatureEnabled } from '$lib/featureFlags';
 
     // const isOverviewEnabled = $derived(isFeatureEnabled('enable-workspace-overview'));

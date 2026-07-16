@@ -1,4 +1,4 @@
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types';
 
 export interface BuilderHistoryEntry {
   id: string;
@@ -19,7 +19,17 @@ export class HistoryManager {
     generationId?: string;
     status?: string;
   }) {
-    await this.db.prepare(`
+    return this.prepareCreate(data).run();
+  }
+
+  prepareCreate(data: {
+    id: string;
+    appId: string;
+    sessionId?: string;
+    generationId?: string;
+    status?: string;
+  }): D1PreparedStatement {
+    return this.db.prepare(`
       INSERT INTO builder_history (id, app_id, session_id, generation_id, status, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
     `).bind(
@@ -29,7 +39,7 @@ export class HistoryManager {
       data.generationId || null,
       data.status || null,
       new Date().toISOString()
-    ).run();
+    );
   }
 
   async get(id: string): Promise<BuilderHistoryEntry | null> {

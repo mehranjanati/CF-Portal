@@ -1,7 +1,7 @@
 # TASK 11-01: File System Tool Implementation
 
 ## Objective
-Implement a set of file system tools that allow the agent to perform standard file operations.
+Implement a set of file system tools as part of the MCP-compatible tooling layer.
 
 ## Requirements
 - Implement `readFile(path)`: Read content of a file.
@@ -9,8 +9,9 @@ Implement a set of file system tools that allow the agent to perform standard fi
 - Implement `listDirectory(path)`: List files and directories.
 - Implement `deleteFile(path)`: Remove a file.
 - Implement `moveFile(oldPath, newPath)`: Rename or move a file.
-- Ensure all operations are secure and respect project boundaries.
+- **Security**: Ensure all operations are strictly scoped to the project directory to prevent directory traversal attacks.
+- **Structure**: Implement using MCP tool definitions.
 
 ## Deliverables
 - `src/lib/features/builder/tools/file-system.ts`
-- Integration with the Tool Call Handler.
+- Integration with the Tool Call Handler and MCP protocol.

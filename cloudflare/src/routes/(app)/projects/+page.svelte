@@ -5,9 +5,9 @@
     import { toast } from '$lib/stores/toast';
     import { generateId } from '$lib/utils';
     // import { isFeatureEnabled } from '$lib/featureFlags';
-    import Card from '$lib/components/ui/Card.svelte';
-    import Button from '$lib/components/ui/Button.svelte';
-    import Input from '$lib/components/ui/Input.svelte';
+    import { Card } from '$lib/components/ui/card';
+    import { Button } from '$lib/components/ui/button';
+    import { Input } from '$lib/components/ui/input';
     import EmptyState from '$lib/components/ui/EmptyState.svelte';
     import { FolderPlus, Plus, Search, Filter, Rocket, Clock, Globe } from 'lucide-svelte';
 

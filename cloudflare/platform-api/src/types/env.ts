@@ -8,4 +8,5 @@ export type AppBindings = {
   DB: D1Database;
   FLAGS: FlagshipBinding;
   AI: any;
+  STREAMER: DurableObjectNamespace;
 };

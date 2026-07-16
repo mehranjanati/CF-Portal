@@ -25,6 +25,16 @@ export async function listApps(
   return (results ?? []) as AppRecord[];
 }
 
+export async function getAppById(
+  db: D1Database,
+  id: string,
+): Promise<AppRecord | null> {
+  return await db
+    .prepare(`SELECT id, tenant_id, name, description, status, created_at, updated_at FROM apps WHERE id = ?`)
+    .bind(id)
+    .first<AppRecord>();
+}
+
 export async function createApp(
   db: D1Database,
   payload: AppCreatePayload,
@@ -43,9 +53,7 @@ export async function createApp(
     .run();
 
   const result = await db
-    .prepare(
-      'SELECT id, tenant_id, name, description, status, created_at, updated_at FROM apps WHERE id = ?',
-    )
+    .prepare(`SELECT id, tenant_id, name, description, status, created_at, updated_at FROM apps WHERE id = ?`)
     .bind(payload.id)
     .first<AppRecord>();
 

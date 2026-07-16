@@ -1,4 +1,4 @@
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, D1PreparedStatement } from '@cloudflare/workers-types';
 
 export interface BuilderGeneration {
   id: string;
@@ -26,8 +26,21 @@ export class GenerationManager {
     errorCode?: string;
     errorMessage?: string;
   }) {
+    return this.prepareCreate(data).run();
+  }
+
+  prepareCreate(data: {
+    id: string;
+    sessionId: string;
+    prompt: string;
+    summary?: string;
+    resultJson?: string;
+    status?: string;
+    errorCode?: string;
+    errorMessage?: string;
+  }): D1PreparedStatement {
     const now = new Date().toISOString();
-    await this.db.prepare(`
+    return this.db.prepare(`
       INSERT INTO builder_generations (id, session_id, prompt, summary, result_json, status, error_code, error_message, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
@@ -40,7 +53,7 @@ export class GenerationManager {
       data.errorCode || null,
       data.errorMessage || null,
       now
-    ).run();
+    );
   }
 
   async get(id: string): Promise<BuilderGeneration | null> {

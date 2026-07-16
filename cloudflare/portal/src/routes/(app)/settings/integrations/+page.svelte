@@ -2,9 +2,9 @@
     import { onMount } from 'svelte';
     import { integrations } from '$lib/api';
     import { workspace } from '$lib/stores/workspace.svelte';
-    import Button from '$lib/components/ui/Button.svelte';
-    import Card from '$lib/components/ui/Card.svelte';
-    import Input from '$lib/components/ui/Input.svelte';
+    import { Button } from '$lib/components/ui/button';
+    import { Card } from '$lib/components/ui/card';
+    import { Input } from '$lib/components/ui/input';
     import Toast from '$lib/components/ui/Toast.svelte';
     import { Code, Cloud, Trash2, Plus, CheckCircle2, ShieldCheck, Key, User as UserIcon, ExternalLink } from 'lucide-svelte';
 

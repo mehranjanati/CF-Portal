@@ -4,9 +4,9 @@
     import { workspace } from '$lib/stores/workspace.svelte';
     import { toast } from '$lib/stores/toast';
     import { generateId } from '$lib/utils';
-    import Button from '$lib/components/ui/Button.svelte';
-    import Card from '$lib/components/ui/Card.svelte';
-    import Input from '$lib/components/ui/Input.svelte';
+    import { Button } from '$lib/components/ui/button';
+    import { Card } from '$lib/components/ui/card';
+    import { Input } from '$lib/components/ui/input';
     import EmptyState from '$lib/components/ui/EmptyState.svelte';
     import { Plus, LayoutGrid, Check, ArrowRight } from 'lucide-svelte';
     import { goto } from '$app/navigation';

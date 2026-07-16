@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { ChevronRight, ChevronDown, File, Folder } from 'lucide-svelte';
 
-  let { files } = $props<{ files: Array<{ path: string; action: string; content?: string }> }>();
-  const dispatch = createEventDispatcher();
+  let { files, onselectfile } = $props<{ 
+    files: Array<{ path: string; action: string; content?: string }>;
+    onselectfile: (file: { path: string; action: string; content?: string }) => void;
+  }>();
 
   // Function to build a tree structure from a flat list of paths
   function buildTree(fileList: typeof files) {
@@ -51,7 +52,7 @@
         if (node.isDir) {
           node.expanded = !node.expanded;
         } else if (node.fileData) {
-          dispatch('selectFile', node.fileData);
+          onselectfile(node.fileData);
         }
       }}
     >

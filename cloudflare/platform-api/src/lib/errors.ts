@@ -1,7 +1,15 @@
 import type { Context } from 'hono';
+import type { Conflict } from '../types/conflict-resolution';
 
 import { failure } from './json';
 import type { AppBindings } from '../types/env';
+
+export class StateConflictError extends Error {
+  constructor(public conflict: Conflict) {
+    super('State conflict detected');
+    this.name = 'StateConflictError';
+  }
+}
 
 export function toErrorMessage(error: unknown): string {
   if (error instanceof Error) {

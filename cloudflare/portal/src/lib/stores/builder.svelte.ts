@@ -15,6 +15,9 @@ export class BuilderStore {
   applicationState = $state<Record<string, any>>({});
   activeToolCalls = $state<AGUIToolCall[]>([]);
 
+  // Original app code for diff comparison (keyed by file path)
+  originalCode = $state<Record<string, string>>({});
+
   // Derived state
   isGenerating = $derived(this.session?.status === 'generating');
 
@@ -118,6 +121,16 @@ export class BuilderStore {
       
       this.session.status = data.session.status;
       this.result = data.result;
+      
+      // Capture original code for diff view when we receive generated code
+      if (data.result?.files) {
+        for (const file of data.result.files) {
+          // Only store original code if we haven't already captured it for this path
+          if (!this.originalCode[file.path]) {
+            this.originalCode[file.path] = '';
+          }
+        }
+      }
     } catch (err: any) {
       this.error = err.message || 'Generation failed';
       this.session.status = 'failed';
@@ -168,6 +181,7 @@ export class BuilderStore {
     this.messages = [];
     this.applicationState = {};
     this.activeToolCalls = [];
+    this.originalCode = {};
   }
 }
 

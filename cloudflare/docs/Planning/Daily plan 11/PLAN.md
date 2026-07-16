@@ -1,31 +1,37 @@
 # Plan: Tooling Phase (The Agent's "Hands")
 
-This plan outlines the implementation of the tools required for the agent to interact with the real world (files, terminal, and browser).
+This plan outlines the implementation of the tools required for the agent to interact with the real world (files, terminal, and browser) using the **Model Context Protocol (MCP)**.
 
 ## Overview
 
-The goal of this phase is to transition from a "talking agent" (capable of reasoning and communication) to an "acting agent" (capable of executing tasks). This is achieved by providing the agent with a set of low-level, secure, and powerful tools.
+The goal of this phase is to transition from a "talking agent" (capable of reasoning and communication) to an "acting agent" (capable of executing tasks). This is achieved by providing the agent with a set of low-level, secure, and powerful tools implemented through an MCP-compatible architecture.
 
 ## Tasks
 
-### [ ] TASK 11-01: File System Tool Implementation
-Implement core file operations (Read, Write, List, Delete, Move).
+### [ ] TASK 11-00: Tooling Architecture & MCP Integration
+Design and implement the tool execution layer using the **Model Context Protocol (MCP)**. This ensures that tools can be reused across different AI clients and IDEs.
+
+### [x] TASK 11-01: File System Tool Implementation
+Implement core file operations (Read, Write, List, Delete, Move) as MCP tools.
 
 ### [ ] TASK 11-02: Terminal / Command Execution Tool
-Implement shell command execution for package management and build processes.
+Implement shell command execution for package management and build processes as MCP tools.
 
 ### [ ] TASK 11-03: Browser / Preview Tool
-Implement a headless browser interface for visual verification and interaction.
+Implement a headless browser interface for visual verification and interaction as MCP tools.
+
+### [ ] TASK 11-04: Code Mode Orchestration
+Enable "Code Mode" capabilities, allowing the agent to orchestrate complex, multi-step tasks by writing and executing code that utilizes the provided tools.
 
 ## Implementation Details
 
-### Tooling Architecture
-All tools will be implemented as part of the `AG-UI` protocol. The agent will emit a `tool_call` packet, and the client-side `Tool Call Handler` will execute the corresponding local function.
+### Tooling Architecture (MCP)
+All tools will be implemented to support the **Model Context Protocol (MCP)**. The agent will act as an MCP client, discovering tools and interacting with them through a standardized interface. This allows for easy expansion and interoperability.
 
-### Security Considerations
+### Security & Sandboxing
 - **Path Restriction**: All file system tools must be strictly scoped to the project directory to prevent unauthorized access to the host system.
-- **Command Sandboxing**: Terminal commands should ideally run in a controlled environment to prevent destructive operations.
-- **Permission Prompting**: For high-impact actions (e.g., `rm -rf`, `npm install`), the UI should implement a "Human-in-the-loop" approval step.
+- **Command Sandboxing**: Terminal commands should run in a controlled environment to prevent destructive operations.
+- **Permission Prompting**: For high-impact actions (e.g., `rm -rf`, `npm install`), the UI must implement a "Human-in-the-loop" approval step.
 
 ### Verification Strategy
 - **Unit Tests**: Verify each tool's logic (e.g., file parsing, command execution).

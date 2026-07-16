@@ -1,9 +1,28 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+  import Prism from 'prismjs';
+  import 'prismjs/themes/prism-tomorrow.css';
+
+  // Import languages
+  import 'prismjs/components/prism-javascript';
+  import 'prismjs/components/prism-typescript';
+  import 'prismjs/components/prism-css';
+  import 'prismjs/components/prism-markup'; // for HTML
+  import 'prismjs/components/prism-json';
+
   let { code = '', language = 'typescript' } = $props<{ code?: string; language?: string }>();
+
+  let codeElement: HTMLElement | undefined = $state();
+
+  $effect(() => {
+    if (codeElement) {
+      Prism.highlightElement(codeElement);
+    }
+  });
 </script>
 
 <div class="code-container">
-  <pre class="code-pre"><code>{code}</code></pre>
+  <pre class="code-pre"><code bind:this={codeElement} class="language-{language}">{code}</code></pre>
 </div>
 
 <style>
@@ -26,3 +45,4 @@
     word-wrap: break-word;
   }
 </style>
+
