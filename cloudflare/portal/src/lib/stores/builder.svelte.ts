@@ -76,6 +76,12 @@ export class BuilderStore {
     this.activeToolCalls = [];
 
     try {
+      // Guard against passing history/generation ids as session ids
+      if (!/^bs_[0-9a-f]+$/.test(sessionId)) {
+        console.warn('[BuilderStore] Ignored non-session id:', sessionId);
+        return;
+      }
+
       const data = await builder.loadSession(sessionId);
       this.session = data.session;
       if (data.result) {

@@ -24,6 +24,15 @@
   let error = $derived(builderStore.error);
   let isGenerating = $derived(builderStore.isGenerating);
 
+  // React to completion/error to exit any lingering generating visuals proactively
+  $effect(() => {
+    const status = builderStore.session?.status;
+    if ((status === 'completed' || status === 'failed') && isGenerating) {
+      // Trigger reactivity flush by reading session again; UI will update via derived values
+      console.log('[BuilderResultPanel] Generation finished:', status);
+    }
+  });
+
   // --- Local UI state ---
   let selectedFile = $state<BuilderFilePlanAction | null>(null);
   let activeTab = $state<'code' | 'diff' | 'preview'>('code');

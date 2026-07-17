@@ -42,7 +42,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
     console.log(`[API Request] ${options?.method || 'GET'} ${url}`, options?.body ? JSON.parse(options.body as string) : '');
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for local dev
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // increased timeout for AI generation
 
     try {
         const response = await fetch(url, {
