@@ -1,11 +1,13 @@
+import { test, expect } from 'vitest';
 import { BuilderService } from './service';
 import { SessionManager } from './sessions';
 import { PromptManager } from './prompts';
 import { GenerationManager } from './generations';
 import { HistoryManager } from './history';
-import { CFAIProvider } from './providers/cfai';
 
-async function runTest() {
+declare const process: any;
+
+test('BuilderService.updateSessionState concurrency', async () => {
   console.log('🚀 Starting test: BuilderService.updateSessionState concurrency');
 
   const sessionId = 'test-session-id';
@@ -27,7 +29,7 @@ async function runTest() {
 
   let initialSession = getFreshSession();
 
-   // 1. Mock D1
+  // 1. Mock D1
   const mockDb = {
     prepare: () => ({
       bind: () => ({
@@ -46,77 +48,75 @@ async function runTest() {
     }
   } as any;
 
+  // 2. Mock SessionManager (to simulate conflict)
+  let sessionVersion = 1;
+  const mockSessions = {
+    get: async (id: string) => {
+      if (id === sessionId) {
+        return {
+          ...initialSession,
+          version: sessionVersion,
+          version_vector: {}
+        };
+      }
+      return null;
+    },
+     update: async (id: string, data: any, expectedVersion: number) => {
+       console.log(`   [Mock SessionManager.update] Called with version ${expectedVersion}, data: ${JSON.stringify(data)}`);
+       if (expectedVersion !== sessionVersion) {
+         throw new Error('Conflict detected: session update failed');
+       }
+       Object.assign(initialSession, data);
+       sessionVersion++;
+       return { changes: 1 };
+     },
 
-    // 2. Mock SessionManager (to simulate conflict)
-    let sessionVersion = 1;
-    const mockSessions = {
-      get: async (id: string) => {
-        if (id === sessionId) {
-          return {
-            ...initialSession,
-            version: sessionVersion,
-            version_vector: {}
-          };
-        }
-        return null;
-      },
-       update: async (id: string, data: any, expectedVersion: number) => {
-         console.log(`   [Mock SessionManager.update] Called with version ${expectedVersion}, data: ${JSON.stringify(data)}`);
-         if (expectedVersion !== sessionVersion) {
-           throw new Error('Conflict detected: session update failed');
-         }
-         Object.assign(initialSession, data);
-         sessionVersion++;
-         return { changes: 1 };
-       },
-
-       prepareUpdate: (id: string, data: any, expectedVersion: number) => ({
-         bind: () => ({
-           run: async () => {
-             console.log(`   [Mock SessionManager.prepareUpdate] Called with version ${expectedVersion}`);
-             if (expectedVersion !== sessionVersion) {
-               throw new Error('Conflict detected: session update failed');
-             }
-             Object.assign(initialSession, data);
-             sessionVersion++;
-             return { changes: 1 };
+     prepareUpdate: (id: string, data: any, expectedVersion: number) => ({
+       bind: () => ({
+         run: async () => {
+           console.log(`   [Mock SessionManager.prepareUpdate] Called with version ${expectedVersion}`);
+           if (expectedVersion !== sessionVersion) {
+             throw new Error('Conflict detected: session update failed');
            }
-         })
-       }),
+           Object.assign(initialSession, data);
+           sessionVersion++;
+           return { changes: 1 };
+         }
+       })
+     }),
 
-      prepareUpdateResult: (id: string, result: any, expectedVersion: number) => ({
-        bind: () => ({
-          run: async () => {
-            if (expectedVersion !== undefined && expectedVersion !== sessionVersion) {
-              throw new Error('Conflict detected: session result update failed');
-            }
-            sessionVersion++;
-            return { changes: 1 };
+    prepareUpdateResult: (id: string, result: any, expectedVersion: number) => ({
+      bind: () => ({
+        run: async () => {
+          if (expectedVersion !== undefined && expectedVersion !== sessionVersion) {
+            throw new Error('Conflict detected: session result update failed');
           }
-        })
-      }),
-      prepareUpdateStatus: (id: string, status: string, expectedVersion?: number) => ({
-        bind: () => ({
-          run: async () => {
-            if (expectedVersion !== undefined && expectedVersion !== sessionVersion) {
-              throw new Error('Conflict detected: session status update failed');
-            }
-            sessionVersion++;
-            return { changes: 1 };
+          sessionVersion++;
+          return { changes: 1 };
+        }
+      })
+    }),
+    prepareUpdateStatus: (id: string, status: string, expectedVersion?: number) => ({
+      bind: () => ({
+        run: async () => {
+          if (expectedVersion !== undefined && expectedVersion !== sessionVersion) {
+            throw new Error('Conflict detected: session status update failed');
           }
-        })
-      }),
-      prepareCreate: (data: any) => ({
-        bind: () => ({
-          run: async () => {
-            sessionVersion++;
-            return { changes: 1 };
-          }
-        })
-      }),
-      create: async () => ({ changes: 1 })
-    } as any;
-
+          sessionVersion++;
+          return { changes: 1 };
+        }
+      })
+    }),
+    prepareCreate: (data: any) => ({
+      bind: () => ({
+        run: async () => {
+          sessionVersion++;
+          return { changes: 1 };
+        }
+      })
+    }),
+    create: async () => ({ changes: 1 })
+  } as any;
 
   // 3. Mock DurableObject (Streamer)
   const mockStreamer = {
@@ -152,19 +152,10 @@ async function runTest() {
 
   // 7. Execute the method with concurrent calls
   console.log('   Executing concurrent updateSessionState calls...');
-  
-  try {
-    // Run two updates concurrently. One should succeed and the other should retry and succeed (due to our implementation)
-    // or fail if we don't have enough retries.
-    await Promise.all([
-      service.updateSessionState(sessionId, newState, { 'client-1': 1 }, 'client-1'),
-      service.updateSessionState(sessionId, newState, { 'client-2': 1 }, 'client-2')
-    ]);
-    console.log('✅ Test passed: Concurrent updates handled!');
-  } catch (err) {
-    console.error('❌ Test failed with error:', err);
-    process.exit(1);
-  }
+  await Promise.all([
+    service.updateSessionState(sessionId, newState, { 'client-1': 1 }, 'client-1'),
+    service.updateSessionState(sessionId, newState, { 'client-2': 1 }, 'client-2')
+  ]);
 
   // 8. Test CASE 4: Concurrent updates to different fields (Automatic Merge)
   console.log('🧪 Test CASE 4: Concurrent updates to different fields (Automatic Merge)...');
@@ -177,33 +168,16 @@ async function runTest() {
   const client1State = { summary: 'Client 1 Summary' };
   const client2State = { files: [{ path: 'src/new.ts', content: 'console.log("new")' }] };
 
-  try {
-    await Promise.all([
-      service.updateSessionState(sessionId, client1State, { 'client-1': 1 }, 'client-1'),
-      service.updateSessionState(sessionId, client2State, { 'client-2': 1 }, 'client-2')
-    ]);
-  } catch (err) {
-    console.error('❌ Test CASE 4 failed with error:', err);
-    process.exit(1);
-  }
+  await Promise.all([
+    service.updateSessionState(sessionId, client1State, { 'client-1': 1 }, 'client-1'),
+    service.updateSessionState(sessionId, client2State, { 'client-2': 1 }, 'client-2')
+  ]);
 
   const finalSession = await mockSessions.get(sessionId);
   
-  if (finalSession.result_summary !== 'Client 1 Summary') {
-    console.error(`❌ Assertion failed: summary mismatch. Expected "Client 1 Summary", got "${finalSession.result_summary}"`);
-    process.exit(1);
-  }
+  expect(finalSession.result_summary).toBe('Client 1 Summary');
   
   const finalFiles = JSON.parse(finalSession.result_files_json || '[]');
-  if (finalFiles.length !== 1 || finalFiles[0].path !== 'src/new.ts') {
-    console.error(`❌ Assertion failed: files mismatch. Expected 1 file with path "src/new.ts", got ${JSON.stringify(finalFiles)}`);
-    process.exit(1);
-  }
-
-  console.log('✅ Test CASE 4 passed!');
-
-  process.exit(0);
-}
-
-runTest();
-
+  expect(finalFiles.length).toBe(1);
+  expect(finalFiles[0].path).toBe('src/new.ts');
+});

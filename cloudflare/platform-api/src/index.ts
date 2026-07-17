@@ -14,6 +14,7 @@ import githubIntegrationRoutes from './modules/integrations/github';
 import portalRoutes from './modules/portal/routes';
 import tenantRoutes from './modules/tenants/routes';
 import workflowRunRoutes from './modules/workflow-runs/routes';
+import agentRoutes from './modules/agent/routes';
 import { failure } from './lib/json';
 import type { AppBindings } from './types/env'; // Corrected import
 
@@ -211,6 +212,15 @@ app.route('/api/integrations/cloudflare', cloudflareIntegrationRoutes);
 app.route('/api/builder', builderRoutes);
 app.route('/api/artifacts', artifactRoutes);
 app.route('/api/portal', portalRoutes);
+app.route('/api/agent', agentRoutes);
+
+app.get('/favicon.ico', (c) => {
+  return new Response(null, { status: 204 });
+});
+
+app.get('/Favicon.ico', (c) => {
+  return new Response(null, { status: 204 });
+});
 
 // Example endpoint to check a feature flag
 app.get('/api/feature-check', async (c) => {
@@ -226,6 +236,11 @@ app.notFound((c) => {
   return failure(c, 404, 'Route not found.', {
     path: c.req.path,
   });
+});
+
+app.onError((err, c) => {
+  console.error(`[Worker] Unhandled error: ${err}`);
+  return failure(c, 500, 'Internal Server Error');
 });
 
 export default app;

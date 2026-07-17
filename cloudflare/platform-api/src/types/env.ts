@@ -9,4 +9,5 @@ export type AppBindings = {
   FLAGS: FlagshipBinding;
   AI: any;
   STREAMER: DurableObjectNamespace;
+  MEMORY: KVNamespace;
 };

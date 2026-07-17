@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev"
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@cloudflare/agents": "^0.0.9",
     "@cloudflare/flagship": "^0.4.2",
     "@openfeature/server-sdk": "^1.22.0",
     "hono": "^4.0.0"
@@ -16,6 +20,7 @@
     "@hono/node-server": "^2.0.8",
     "tsx": "^4.23.0",
     "typescript": "^5.0.4",
+    "vitest": "^2.0.0",
     "wrangler": "^4.86.0"
   }
 }

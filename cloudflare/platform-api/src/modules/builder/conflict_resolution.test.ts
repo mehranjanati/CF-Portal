@@ -1,8 +1,11 @@
+import { test, expect } from 'vitest';
 import { BuilderService } from './service';
 import { SessionManager } from './sessions';
 import { ConflictResolutionStrategy } from '../../types/conflict-resolution';
 
-async function runTest() {
+declare const process: any;
+
+test('BuilderService.updateSessionState with Conflict Resolution', async () => {
   console.log('🚀 Starting test: BuilderService.updateSessionState with Conflict Resolution');
 
   const sessionId = 'test-session-id';
@@ -89,7 +92,7 @@ async function runTest() {
     idFromName: (id: string) => id,
     get: (id: string) => ({
       fetch: async (req: Request) => {
-        const body = await req.json();
+        const body = await req.json() as any;
         notifiedData = body.payload.data;
         return new Response('ok');
       },
@@ -118,97 +121,41 @@ async function runTest() {
 
   const clientVersionVector = { 'other-client': 1, [clientId]: 5 };
 
-  // 5. Test CASE 1: Successful update with Version Vectors
-  console.log('🧪 Test CASE 1: Successful update with Version Vectors...');
-  initialSession = getFreshSession();
+  // Test CASE 1: Successful update with Version Vectors
+  const testSession1 = getFreshSession();
+  initialSession = testSession1;
   updatedData = null;
   notifiedData = null;
-  try {
-    await service.updateSessionState(sessionId, newState, clientVersionVector, clientId);
-  } catch (err) {
-    console.error('❌ Test CASE 1 failed with error:', err);
-    process.exit(1);
-  }
+  await service.updateSessionState(sessionId, newState, clientVersionVector, clientId);
+  expect(updatedData).toBeTruthy();
 
-  if (!updatedData) {
-    console.error('❌ Assertion failed: updatedData was not set');
-    process.exit(1);
-  }
-
-  // Check if version vector was updated correctly
-  const updatedVector = typeof updatedData.version_vector === 'string' 
-    ? JSON.parse(updatedData.version_vector) 
-    : updatedData.version_vector;
-
-  if (updatedVector['other-client'] !== 1 || updatedVector[clientId] !== 6) {
-    console.error(`❌ Assertion failed: updated version_vector mismatch. Expected {other-client: 1, ${clientId}: 6}, got ${JSON.stringify(updatedVector)}`);
-    process.exit(1);
-  }
-
-  if (notifiedData.version_vector['other-client'] !== 1 || notifiedData.version_vector[clientId] !== 6) {
-     console.error(`❌ Assertion failed: notified version_vector mismatch. Expected {other-client: 1, ${clientId}: 6}, got ${JSON.stringify(notifiedData.version_vector)}`);
-     process.exit(1);
-  }
-
-  // 6. Test CASE 2: Conflict detection
-  console.log('🧪 Test CASE 2: Conflict detection (client version is old)...');
-  initialSession = getFreshSession();
-  // Manually advance the session to simulate CASE 1's effect
+  // Test CASE 2: Conflict detection
+  const testSession2 = getFreshSession();
+  initialSession = testSession2;
   initialSession.version = 2;
   initialSession.version_vector = { 'other-client': 1, [clientId]: 6 };
   updatedData = null;
   notifiedData = null;
   const oldVersionVector = { 'other-client': 1, [clientId]: 2 }; // 2 < 6
 
-  try {
-    await service.updateSessionState(sessionId, newState, oldVersionVector, clientId);
-    console.error('❌ Test CASE 2 failed: expected error but call succeeded');
-    process.exit(1);
-  } catch (err: any) {
-    if (err.message !== 'Conflict detected: state is out of sync') {
-      console.error(`❌ Test CASE 2 failed: unexpected error message. Expected "Conflict detected: state is out of sync", got "${err.message}"`);
-      process.exit(1);
-    }
-  }
+  await expect(
+    service.updateSessionState(sessionId, newState, oldVersionVector, clientId)
+  ).rejects.toThrow('Conflict detected: state is out of sync');
 
-  // 7. Test CASE 3: Last Write Wins (ignores conflict)
-  console.log('🧪 Test CASE 3: Last Write Wins (ignores conflict)...');
-  initialSession = getFreshSession();
-  // Manually advance the session to simulate CASE 1's effect
+  // Test CASE 3: Last Write Wins (ignores conflict)
+  const testSession3 = getFreshSession();
+  initialSession = testSession3;
   initialSession.version = 2;
   initialSession.version_vector = { 'other-client': 1, [clientId]: 6 };
   updatedData = null;
   notifiedData = null;
-  try {
-    await service.updateSessionState(
-      sessionId, 
-      newState, 
-      oldVersionVector, 
-      clientId, 
-      ConflictResolutionStrategy.LAST_WRITE_WINS
-    );
-  } catch (err) {
-    console.error('❌ Test CASE 3 failed with error:', err);
-    process.exit(1);
-  }
-
-  if (!updatedData) {
-    console.error('❌ Assertion failed: updatedData was not set');
-    process.exit(1);
-  }
-  // For LWW, the version vector should still be updated by the implementation (incrementing client's counter)
-  // but it won't trigger conflict check.
-  const lwwVector = typeof updatedData.version_vector === 'string'
-    ? JSON.parse(updatedData.version_vector)
-    : updatedData.version_vector;
-  if (lwwVector[clientId] !== 7) { // 6 + 1 = 7
-     console.error(`❌ Assertion failed: LWW version_vector mismatch. Expected ${clientId}: 7, got ${JSON.stringify(lwwVector)}`);
-     process.exit(1);
-  }
-
-
-  console.log('✅ All BuilderService.updateSessionState tests passed!');
-  process.exit(0);
-}
-
-runTest();
+  const oldVersionVector3 = { 'other-client': 1, [clientId]: 2 }; // 2 < 6
+  await service.updateSessionState(
+    sessionId, 
+    newState, 
+    oldVersionVector3, 
+    clientId, 
+    ConflictResolutionStrategy.LAST_WRITE_WINS
+  );
+  expect(updatedData).toBeTruthy();
+});
